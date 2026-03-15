@@ -37,7 +37,8 @@ jobs:
         mkdir build
         cd build
         export PICO_SDK_PATH=../pico-sdk
-        cmake .. -DCMAKE_BUILD_TYPE=Release
+        # 强制指定RP2350和微雪板子配置
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DPICO_PLATFORM=rp2350 -DPICO_BOARD=waveshare_rp2350_usb_a
         make -j4
 
     - name: Upload UF2 artifact
