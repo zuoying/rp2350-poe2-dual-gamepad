@@ -1,0 +1,47 @@
+name: Build RP2350 UF2 Firmware
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential cmake git
+
+    - name: Clone Pico SDK
+      run: |
+        git clone --depth 1 --branch master https://github.com/raspberrypi/pico-sdk.git
+        cd pico-sdk
+        git submodule update --init
+
+    - name: Clone pico-pio-usb
+      run: |
+        git clone --depth 1 https://github.com/sekigon-gonnoc/pico-pio-usb.git
+        cp -r pico-pio-usb/src/* pico-sdk/lib/
+
+    - name: Build firmware
+      run: |
+        mkdir build
+        cd build
+        export PICO_SDK_PATH=../pico-sdk
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        make -j4
+
+    - name: Upload UF2 artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: poe2-dual-gamepad-uf2
+        path: build/poe2_dual_gamepad.uf2
